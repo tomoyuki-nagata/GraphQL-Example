@@ -6,43 +6,71 @@ package graph
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"graphql-example/graph/model"
+	"graphql-example/repository"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	return &model.Todo{
-		ID:   "TODO-3",
-		Text: input.Text,
-		User: &model.User{
-			ID:   input.UserID,
-			Name: "name",
-		},
-	}, nil
+// CreateTask is the resolver for the createTask field.
+func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.CreateTaskPayload, error) {
+	panic(fmt.Errorf("not implemented: CreateTask - createTask"))
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	return []*model.Todo{
-		{
-			ID:   "TODO-1",
-			Text: "My Todo 1",
-			User: &model.User{
-				ID:   "User-1",
-				Name: "hsaki",
-			},
-			Done: true,
-		},
-		{
-			ID:   "TODO-2",
-			Text: "My Todo 2",
-			User: &model.User{
-				ID:   "User-1",
-				Name: "hsaki",
-			},
-			Done: false,
-		},
-	}, nil
+// AddCategory is the resolver for the addCategory field.
+func (r *mutationResolver) AddCategory(ctx context.Context, input model.AddCategoryInput) (*model.AddCategoryPayload, error) {
+	category, err := r.Repo.AddCategory(ctx, input.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &model.AddCategoryPayload{Category: category}, nil
+}
+
+// UpdateCategory is the resolver for the updateCategory field.
+func (r *mutationResolver) UpdateCategory(ctx context.Context, id string, input model.UpdateCategoryInput) (*model.UpdateCategoryPayload, error) {
+	category, err := r.Repo.UpdateCategory(ctx, id, input.Name)
+	if err != nil {
+		if errors.Is(err, repository.ErrCategoryNotFound) {
+			return &model.UpdateCategoryPayload{
+				Errors: []model.Error{model.CategoryNotFoundError{Message: fmt.Sprintf("ID:%s not found", id)}},
+			}, nil
+		}
+		return nil, err
+	}
+	return &model.UpdateCategoryPayload{Category: category}, nil
+}
+
+// DeleteCategory is the resolver for the deleteCategory field.
+func (r *mutationResolver) DeleteCategory(ctx context.Context, id string) (*model.DeleteCategoryPayload, error) {
+	err := r.Repo.DeleteCategory(ctx, id)
+	if err != nil {
+		if errors.Is(err, repository.ErrCategoryNotFound) {
+			return &model.DeleteCategoryPayload{
+				Errors: []model.Error{model.CategoryNotFoundError{Message: fmt.Sprintf("ID:%s not found", id)}},
+			}, nil
+		}
+		return nil, err
+	}
+	return &model.DeleteCategoryPayload{ID: id}, nil
+}
+
+// Tasks is the resolver for the tasks field.
+func (r *queryResolver) Tasks(ctx context.Context) ([]*model.Task, error) {
+	panic(fmt.Errorf("not implemented: Tasks - tasks"))
+}
+
+// Categories is the resolver for the categories field.
+func (r *queryResolver) Categories(ctx context.Context) ([]*model.Category, error) {
+	categories, err := r.Repo.GetAll(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return categories, nil
+}
+
+// Node is the resolver for the node field.
+func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error) {
+	panic(fmt.Errorf("not implemented: Node - node"))
 }
 
 // Mutation returns MutationResolver implementation.

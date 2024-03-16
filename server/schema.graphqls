@@ -1,28 +1,78 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
-
-type Todo {
+interface Node {
   id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
 }
 
-type User {
+type Task implements Node {
+  id: ID!
+  title: String!
+  description: String!
+  category: Category!
+  status: Status!
+}
+
+enum Status {
+  New
+  WORKING
+  DONE
+}
+
+type Category implements Node {
   id: ID!
   name: String!
 }
 
 type Query {
-  todos: [Todo!]!
+  tasks: [Task!]!
+  categories: [Category!]!
+  node(id: ID!): Node
 }
 
-input NewTodo {
-  text: String!
-  userId: String!
-}
-
+#####################################
+## Mutation
+#####################################
 type Mutation {
-  createTodo(input: NewTodo!): Todo!
+  createTask(input: CreateTaskInput!): CreateTaskPayload!
+  addCategory(input: AddCategoryInput!): AddCategoryPayload!
+  updateCategory(id: ID!, input: UpdateCategoryInput!): UpdateCategoryPayload!
+  deleteCategory(id: ID!): DeleteCategoryPayload!
+}
+
+# Task関連
+input CreateTaskInput {
+  title: String!
+  description: String!
+  categoryId: String!
+}
+
+type CreateTaskPayload {
+  task: Task!
+}
+
+# Category関連
+input AddCategoryInput {
+  name: String!
+}
+input UpdateCategoryInput {
+  name: String!
+}
+
+type AddCategoryPayload {
+  category: Category
+  errors: [Error!]
+}
+type UpdateCategoryPayload {
+  category: Category
+  errors: [Error!]
+}
+type DeleteCategoryPayload {
+  id: ID!
+  errors: [Error!]
+}
+
+type CategoryNotFoundError implements Error {
+  message: String!
+}
+
+interface Error {
+  message: String!
 }
