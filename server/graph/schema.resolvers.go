@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"graphql-example/graph/model"
 	"graphql-example/repository"
+	"strings"
 )
 
 // CreateTask is the resolver for the createTask field.
@@ -61,7 +62,7 @@ func (r *queryResolver) Tasks(ctx context.Context) ([]*model.Task, error) {
 
 // Categories is the resolver for the categories field.
 func (r *queryResolver) Categories(ctx context.Context) ([]*model.Category, error) {
-	categories, err := r.Repo.GetAll(ctx)
+	categories, err := r.Repo.GetAllCategory(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +71,17 @@ func (r *queryResolver) Categories(ctx context.Context) ([]*model.Category, erro
 
 // Node is the resolver for the node field.
 func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error) {
-	panic(fmt.Errorf("not implemented: Node - node"))
+	parts := strings.Split(id, "_")
+
+	// 先頭の要素がv1部分、2番目の要素がCategoryになる
+	_, nType := parts[0], parts[1]
+
+	switch nType {
+	case "Category":
+		return r.Repo.GetCategoryById(ctx, id)
+	default:
+		return nil, errors.New("invalid ID")
+	}
 }
 
 // Mutation returns MutationResolver implementation.

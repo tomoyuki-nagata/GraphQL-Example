@@ -18,8 +18,17 @@ var count int = len(categories)
 type categoryRepository struct {
 }
 
-func (c *categoryRepository) GetAll(ctx context.Context) ([]*model.Category, error) {
+func (c *categoryRepository) GetAllCategory(ctx context.Context) ([]*model.Category, error) {
 	return categories, nil
+}
+
+func (c *categoryRepository) GetCategoryById(ctx context.Context, id string) (*model.Category, error) {
+	for _, category := range categories {
+		if category.ID == id {
+			return category, nil
+		}
+	}
+	return nil, ErrCategoryNotFound
 }
 
 func (c *categoryRepository) AddCategory(ctx context.Context, name string) (*model.Category, error) {
