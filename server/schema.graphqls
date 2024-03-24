@@ -1,3 +1,5 @@
+scalar Date
+
 interface Node {
   id: ID!
 }
@@ -8,6 +10,7 @@ type Task implements Node {
   description: String!
   category: Category!
   status: Status!
+  deadline: Date
 }
 
 enum Status {
@@ -48,6 +51,7 @@ input CreateTaskInput {
   title: String!
   description: String!
   categoryId: String!
+  deadline: Date
 }
 
 type CreateTaskPayload {
@@ -60,6 +64,7 @@ input UpdateTaskInput {
   description: String!
   categoryId: String!
   status: Status!
+  deadline: Date
 }
 
 type UpdateTaskPayload {

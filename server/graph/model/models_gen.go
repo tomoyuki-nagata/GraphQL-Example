@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 )
 
 type Error interface {
@@ -36,9 +37,10 @@ func (Category) IsNode()            {}
 func (this Category) GetID() string { return this.ID }
 
 type CreateTaskInput struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	CategoryID  string `json:"categoryId"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	CategoryID  string     `json:"categoryId"`
+	Deadline    *time.Time `json:"deadline,omitempty"`
 }
 
 type CreateTaskPayload struct {
@@ -70,11 +72,12 @@ type Query struct {
 }
 
 type Task struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Category    *Category `json:"category"`
-	Status      Status    `json:"status"`
+	ID          string     `json:"id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	Category    *Category  `json:"category"`
+	Status      Status     `json:"status"`
+	Deadline    *time.Time `json:"deadline,omitempty"`
 }
 
 func (Task) IsNode()            {}
@@ -90,10 +93,11 @@ type UpdateCategoryPayload struct {
 }
 
 type UpdateTaskInput struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	CategoryID  string `json:"categoryId"`
-	Status      Status `json:"status"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	CategoryID  string     `json:"categoryId"`
+	Status      Status     `json:"status"`
+	Deadline    *time.Time `json:"deadline,omitempty"`
 }
 
 type UpdateTaskPayload struct {

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -94,6 +95,7 @@ type ComplexityRoot struct {
 
 	Task struct {
 		Category    func(childComplexity int) int
+		Deadline    func(childComplexity int) int
 		Description func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Status      func(childComplexity int) int
@@ -342,6 +344,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Task.Category(childComplexity), true
 
+	case "Task.deadline":
+		if e.complexity.Task.Deadline == nil {
+			break
+		}
+
+		return e.complexity.Task.Deadline(childComplexity), true
+
 	case "Task.description":
 		if e.complexity.Task.Description == nil {
 			break
@@ -507,7 +516,9 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema.graphqls", Input: `interface Node {
+	{Name: "../schema.graphqls", Input: `scalar Date
+
+interface Node {
   id: ID!
 }
 
@@ -517,6 +528,7 @@ type Task implements Node {
   description: String!
   category: Category!
   status: Status!
+  deadline: Date
 }
 
 enum Status {
@@ -557,6 +569,7 @@ input CreateTaskInput {
   title: String!
   description: String!
   categoryId: String!
+  deadline: Date
 }
 
 type CreateTaskPayload {
@@ -569,6 +582,7 @@ input UpdateTaskInput {
   description: String!
   categoryId: String!
   status: Status!
+  deadline: Date
 }
 
 type UpdateTaskPayload {
@@ -1036,6 +1050,8 @@ func (ec *executionContext) fieldContext_CreateTaskPayload_task(ctx context.Cont
 				return ec.fieldContext_Task_category(ctx, field)
 			case "status":
 				return ec.fieldContext_Task_status(ctx, field)
+			case "deadline":
+				return ec.fieldContext_Task_deadline(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -1713,6 +1729,8 @@ func (ec *executionContext) fieldContext_Query_tasks(ctx context.Context, field 
 				return ec.fieldContext_Task_category(ctx, field)
 			case "status":
 				return ec.fieldContext_Task_status(ctx, field)
+			case "deadline":
+				return ec.fieldContext_Task_deadline(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -1769,6 +1787,8 @@ func (ec *executionContext) fieldContext_Query_task(ctx context.Context, field g
 				return ec.fieldContext_Task_category(ctx, field)
 			case "status":
 				return ec.fieldContext_Task_status(ctx, field)
+			case "deadline":
+				return ec.fieldContext_Task_deadline(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -2244,6 +2264,47 @@ func (ec *executionContext) fieldContext_Task_status(ctx context.Context, field 
 	return fc, nil
 }
 
+func (ec *executionContext) _Task_deadline(ctx context.Context, field graphql.CollectedField, obj *model.Task) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Task_deadline(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Deadline, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalODate2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Task_deadline(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Task",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Date does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _UpdateCategoryPayload_category(ctx context.Context, field graphql.CollectedField, obj *model.UpdateCategoryPayload) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_UpdateCategoryPayload_category(ctx, field)
 	if err != nil {
@@ -2378,6 +2439,8 @@ func (ec *executionContext) fieldContext_UpdateTaskPayload_task(ctx context.Cont
 				return ec.fieldContext_Task_category(ctx, field)
 			case "status":
 				return ec.fieldContext_Task_status(ctx, field)
+			case "deadline":
+				return ec.fieldContext_Task_deadline(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Task", field.Name)
 		},
@@ -4233,7 +4296,7 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "description", "categoryId"}
+	fieldsInOrder := [...]string{"title", "description", "categoryId", "deadline"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4261,6 +4324,13 @@ func (ec *executionContext) unmarshalInputCreateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.CategoryID = data
+		case "deadline":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deadline"))
+			data, err := ec.unmarshalODate2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deadline = data
 		}
 	}
 
@@ -4301,7 +4371,7 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"title", "description", "categoryId", "status"}
+	fieldsInOrder := [...]string{"title", "description", "categoryId", "status", "deadline"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4336,6 +4406,13 @@ func (ec *executionContext) unmarshalInputUpdateTaskInput(ctx context.Context, o
 				return it, err
 			}
 			it.Status = data
+		case "deadline":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("deadline"))
+			data, err := ec.unmarshalODate2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Deadline = data
 		}
 	}
 
@@ -4916,6 +4993,8 @@ func (ec *executionContext) _Task(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "deadline":
+			out.Values[i] = ec._Task_deadline(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5910,6 +5989,22 @@ func (ec *executionContext) marshalOCategory2ᚖgraphqlᚑexampleᚋgraphᚋmode
 		return graphql.Null
 	}
 	return ec._Category(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalODate2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := model.UnmarshalDate(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODate2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := model.MarshalDate(*v)
+	return res
 }
 
 func (ec *executionContext) marshalOError2ᚕgraphqlᚑexampleᚋgraphᚋmodelᚐErrorᚄ(ctx context.Context, sel ast.SelectionSet, v []model.Error) graphql.Marshaler {

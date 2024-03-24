@@ -15,7 +15,7 @@ import (
 
 // CreateTask is the resolver for the createTask field.
 func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.CreateTaskPayload, error) {
-	task, err := r.Repo.CreateTask(ctx, input.Title, input.Description, input.CategoryID)
+	task, err := r.Repo.CreateTask(ctx, input.Title, input.Description, input.CategoryID, input.Deadline)
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,7 @@ func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTas
 
 // UpdateTask is the resolver for the updateTask field.
 func (r *mutationResolver) UpdateTask(ctx context.Context, id string, input model.UpdateTaskInput) (*model.UpdateTaskPayload, error) {
-	task, err := r.Repo.UpdateTask(ctx, id, input.Title, input.Description, input.CategoryID, input.Status.String())
+	task, err := r.Repo.UpdateTask(ctx, id, input.Title, input.Description, input.CategoryID, input.Status.String(), input.Deadline)
 	if err != nil {
 		if errors.Is(err, repository.ErrTaskNotFound) {
 			return &model.UpdateTaskPayload{

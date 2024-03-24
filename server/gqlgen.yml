@@ -85,6 +85,9 @@ models:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/99designs/gqlgen/graphql.Int32
+  Date:
+    model:
+      - graphql-example/graph/model.Date
   Task:
     fields:
       category:

@@ -5,6 +5,7 @@ import (
 	"graphql-example/graph/model"
 	"slices"
 	"strconv"
+	"time"
 )
 
 var tasks []*model.Task = []*model.Task{
@@ -31,7 +32,7 @@ func (c *taskRepository) GetTaskById(ctx context.Context, id string) (*model.Tas
 	return nil, ErrTaskNotFound
 }
 
-func (c *taskRepository) CreateTask(ctx context.Context, title, description, categoryId string) (*model.Task, error) {
+func (c *taskRepository) CreateTask(ctx context.Context, title, description, categoryId string, deadline *time.Time) (*model.Task, error) {
 	tasksCount++
 	newTask := model.Task{
 		ID:          "v1_Task_" + strconv.Itoa(tasksCount),
@@ -40,21 +41,24 @@ func (c *taskRepository) CreateTask(ctx context.Context, title, description, cat
 		Category:    &model.Category{ID: categoryId},
 		Status:      model.StatusNew,
 	}
+	if deadline != nil {
+		newTask.Deadline = deadline
+	}
 	tasks = append(tasks, &newTask)
 	return &newTask, nil
 }
 
-func (c *taskRepository) UpdateTask(ctx context.Context, id, title, description, categoryId, statusStr string) (*model.Task, error) {
+func (c *taskRepository) UpdateTask(ctx context.Context, id, title, description, categoryId, statusStr string, deadline *time.Time) (*model.Task, error) {
 	status := model.Status(statusStr)
-	if !status.IsValid() {
-		return nil, ErrStatusInvalid
-	}
 	for _, task := range tasks {
 		if task.ID == id {
 			task.Title = title
 			task.Description = description
 			task.Category = &model.Category{ID: categoryId}
 			task.Status = model.Status(status)
+			if deadline != nil {
+				task.Deadline = deadline
+			}
 			return task, nil
 		}
 	}

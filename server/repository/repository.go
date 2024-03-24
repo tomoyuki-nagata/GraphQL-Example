@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"graphql-example/graph/model"
+	"time"
 )
 
 type Repositories interface {
@@ -13,8 +14,8 @@ type Repositories interface {
 type TaskRepository interface {
 	GetAllTask(ctx context.Context) ([]*model.Task, error)
 	GetTaskById(ctx context.Context, id string) (*model.Task, error)
-	CreateTask(ctx context.Context, title, description, categoryId string) (*model.Task, error)
-	UpdateTask(ctx context.Context, id, title, description, categoryId, status string) (*model.Task, error)
+	CreateTask(ctx context.Context, title, description, categoryId string, deadline *time.Time) (*model.Task, error)
+	UpdateTask(ctx context.Context, id, title, description, categoryId, status string, deadline *time.Time) (*model.Task, error)
 	DeleteTask(ctx context.Context, id string) error
 }
 
