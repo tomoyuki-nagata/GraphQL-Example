@@ -13,7 +13,7 @@ var categories []*model.Category = []*model.Category{
 	{ID: "v1_Category_3", Name: "勉強"},
 }
 
-var count int = len(categories)
+var categoryCount int = len(categories)
 
 type categoryRepository struct {
 }
@@ -32,9 +32,9 @@ func (c *categoryRepository) GetCategoryById(ctx context.Context, id string) (*m
 }
 
 func (c *categoryRepository) AddCategory(ctx context.Context, name string) (*model.Category, error) {
-	count++
+	categoryCount++
 	newCategory := model.Category{
-		ID:   "v1_Category_" + strconv.Itoa(count),
+		ID:   "v1_Category_" + strconv.Itoa(categoryCount),
 		Name: name,
 	}
 	categories = append(categories, &newCategory)

@@ -11,7 +11,7 @@ type Task implements Node {
 }
 
 enum Status {
-  New
+  NEW
   WORKING
   DONE
 }
@@ -21,8 +21,12 @@ type Category implements Node {
   name: String!
 }
 
+#####################################
+## Query
+#####################################
 type Query {
   tasks: [Task!]!
+  task(id: ID!): Task!
   categories: [Category!]!
   node(id: ID!): Node
 }
@@ -32,6 +36,8 @@ type Query {
 #####################################
 type Mutation {
   createTask(input: CreateTaskInput!): CreateTaskPayload!
+  updateTask(id: ID!, input: UpdateTaskInput!): UpdateTaskPayload!
+  deleteTask(id: ID!): DeleteTaskPayload!
   addCategory(input: AddCategoryInput!): AddCategoryPayload!
   updateCategory(id: ID!, input: UpdateCategoryInput!): UpdateCategoryPayload!
   deleteCategory(id: ID!): DeleteCategoryPayload!
@@ -45,13 +51,32 @@ input CreateTaskInput {
 }
 
 type CreateTaskPayload {
-  task: Task!
+  task: Task
+  errors: [Error!]
+}
+
+input UpdateTaskInput {
+  title: String!
+  description: String!
+  categoryId: String!
+  status: Status!
+}
+
+type UpdateTaskPayload {
+  task: Task
+  errors: [Error!]
+}
+
+type DeleteTaskPayload {
+  id: ID!
+  errors: [Error!]
 }
 
 # Category関連
 input AddCategoryInput {
   name: String!
 }
+
 input UpdateCategoryInput {
   name: String!
 }
@@ -60,16 +85,21 @@ type AddCategoryPayload {
   category: Category
   errors: [Error!]
 }
+
 type UpdateCategoryPayload {
   category: Category
   errors: [Error!]
 }
+
 type DeleteCategoryPayload {
   id: ID!
   errors: [Error!]
 }
 
-type CategoryNotFoundError implements Error {
+#####################################
+## Error
+#####################################
+type NotFoundError implements Error {
   message: String!
 }
 

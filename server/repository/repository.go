@@ -6,7 +6,16 @@ import (
 )
 
 type Repositories interface {
+	TaskRepository
 	CategoryRepository
+}
+
+type TaskRepository interface {
+	GetAllTask(ctx context.Context) ([]*model.Task, error)
+	GetTaskById(ctx context.Context, id string) (*model.Task, error)
+	CreateTask(ctx context.Context, title, description, categoryId string) (*model.Task, error)
+	UpdateTask(ctx context.Context, id, title, description, categoryId, status string) (*model.Task, error)
+	DeleteTask(ctx context.Context, id string) error
 }
 
 type CategoryRepository interface {
@@ -18,11 +27,13 @@ type CategoryRepository interface {
 }
 
 type repositories struct {
+	*taskRepository
 	*categoryRepository
 }
 
 func New() Repositories {
 	return &repositories{
+		taskRepository:     &taskRepository{},
 		categoryRepository: &categoryRepository{},
 	}
 }

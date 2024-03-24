@@ -15,7 +15,39 @@ import (
 
 // CreateTask is the resolver for the createTask field.
 func (r *mutationResolver) CreateTask(ctx context.Context, input model.CreateTaskInput) (*model.CreateTaskPayload, error) {
-	panic(fmt.Errorf("not implemented: CreateTask - createTask"))
+	task, err := r.Repo.CreateTask(ctx, input.Title, input.Description, input.CategoryID)
+	if err != nil {
+		return nil, err
+	}
+	return &model.CreateTaskPayload{Task: task}, nil
+}
+
+// UpdateTask is the resolver for the updateTask field.
+func (r *mutationResolver) UpdateTask(ctx context.Context, id string, input model.UpdateTaskInput) (*model.UpdateTaskPayload, error) {
+	task, err := r.Repo.UpdateTask(ctx, id, input.Title, input.Description, input.CategoryID, input.Status.String())
+	if err != nil {
+		if errors.Is(err, repository.ErrTaskNotFound) {
+			return &model.UpdateTaskPayload{
+				Errors: []model.Error{model.NotFoundError{Message: fmt.Sprintf("ID:%s not found", id)}},
+			}, nil
+		}
+		return nil, err
+	}
+	return &model.UpdateTaskPayload{Task: task}, nil
+}
+
+// DeleteTask is the resolver for the deleteTask field.
+func (r *mutationResolver) DeleteTask(ctx context.Context, id string) (*model.DeleteTaskPayload, error) {
+	err := r.Repo.DeleteTask(ctx, id)
+	if err != nil {
+		if errors.Is(err, repository.ErrTaskNotFound) {
+			return &model.DeleteTaskPayload{
+				Errors: []model.Error{model.NotFoundError{Message: fmt.Sprintf("ID:%s not found", id)}},
+			}, nil
+		}
+		return nil, err
+	}
+	return &model.DeleteTaskPayload{ID: id}, nil
 }
 
 // AddCategory is the resolver for the addCategory field.
@@ -33,7 +65,7 @@ func (r *mutationResolver) UpdateCategory(ctx context.Context, id string, input 
 	if err != nil {
 		if errors.Is(err, repository.ErrCategoryNotFound) {
 			return &model.UpdateCategoryPayload{
-				Errors: []model.Error{model.CategoryNotFoundError{Message: fmt.Sprintf("ID:%s not found", id)}},
+				Errors: []model.Error{model.NotFoundError{Message: fmt.Sprintf("ID:%s not found", id)}},
 			}, nil
 		}
 		return nil, err
@@ -47,7 +79,7 @@ func (r *mutationResolver) DeleteCategory(ctx context.Context, id string) (*mode
 	if err != nil {
 		if errors.Is(err, repository.ErrCategoryNotFound) {
 			return &model.DeleteCategoryPayload{
-				Errors: []model.Error{model.CategoryNotFoundError{Message: fmt.Sprintf("ID:%s not found", id)}},
+				Errors: []model.Error{model.NotFoundError{Message: fmt.Sprintf("ID:%s not found", id)}},
 			}, nil
 		}
 		return nil, err
@@ -57,7 +89,20 @@ func (r *mutationResolver) DeleteCategory(ctx context.Context, id string) (*mode
 
 // Tasks is the resolver for the tasks field.
 func (r *queryResolver) Tasks(ctx context.Context) ([]*model.Task, error) {
-	panic(fmt.Errorf("not implemented: Tasks - tasks"))
+	tasks, err := r.Repo.GetAllTask(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}
+
+// Task is the resolver for the task field.
+func (r *queryResolver) Task(ctx context.Context, id string) (*model.Task, error) {
+	task, err := r.Repo.GetTaskById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
 }
 
 // Categories is the resolver for the categories field.
@@ -77,6 +122,8 @@ func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error)
 	_, nType := parts[0], parts[1]
 
 	switch nType {
+	case "Task":
+		return r.Repo.GetTaskById(ctx, id)
 	case "Category":
 		return r.Repo.GetCategoryById(ctx, id)
 	default:

@@ -35,13 +35,6 @@ type Category struct {
 func (Category) IsNode()            {}
 func (this Category) GetID() string { return this.ID }
 
-type CategoryNotFoundError struct {
-	Message string `json:"message"`
-}
-
-func (CategoryNotFoundError) IsError()                {}
-func (this CategoryNotFoundError) GetMessage() string { return this.Message }
-
 type CreateTaskInput struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`
@@ -49,7 +42,8 @@ type CreateTaskInput struct {
 }
 
 type CreateTaskPayload struct {
-	Task *Task `json:"task"`
+	Task   *Task   `json:"task,omitempty"`
+	Errors []Error `json:"errors,omitempty"`
 }
 
 type DeleteCategoryPayload struct {
@@ -57,8 +51,20 @@ type DeleteCategoryPayload struct {
 	Errors []Error `json:"errors,omitempty"`
 }
 
+type DeleteTaskPayload struct {
+	ID     string  `json:"id"`
+	Errors []Error `json:"errors,omitempty"`
+}
+
 type Mutation struct {
 }
+
+type NotFoundError struct {
+	Message string `json:"message"`
+}
+
+func (NotFoundError) IsError()                {}
+func (this NotFoundError) GetMessage() string { return this.Message }
 
 type Query struct {
 }
@@ -83,10 +89,22 @@ type UpdateCategoryPayload struct {
 	Errors   []Error   `json:"errors,omitempty"`
 }
 
+type UpdateTaskInput struct {
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	CategoryID  string `json:"categoryId"`
+	Status      Status `json:"status"`
+}
+
+type UpdateTaskPayload struct {
+	Task   *Task   `json:"task,omitempty"`
+	Errors []Error `json:"errors,omitempty"`
+}
+
 type Status string
 
 const (
-	StatusNew     Status = "New"
+	StatusNew     Status = "NEW"
 	StatusWorking Status = "WORKING"
 	StatusDone    Status = "DONE"
 )
