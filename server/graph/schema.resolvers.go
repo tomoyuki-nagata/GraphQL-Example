@@ -133,7 +133,14 @@ func (r *queryResolver) Node(ctx context.Context, id string) (model.Node, error)
 
 // Category is the resolver for the category field.
 func (r *taskResolver) Category(ctx context.Context, obj *model.Task) (*model.Category, error) {
-	return r.Repo.GetCategoryById(ctx, obj.Category.ID)
+	// Loaderに検索条件となるIDを登録(この時点では即時実行されない)
+	thunk := r.Loaders.CategoryLoader.Load(ctx, obj.Category.ID)
+	// LoaderがDBに対してデータ取得処理を実行するまで待って、結果を受け取る
+	category, err := thunk()
+	if err != nil {
+		return nil, err
+	}
+	return category, nil
 }
 
 // Mutation returns MutationResolver implementation.

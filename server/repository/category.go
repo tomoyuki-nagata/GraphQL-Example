@@ -22,6 +22,18 @@ func (c *categoryRepository) GetAllCategory(ctx context.Context) ([]*model.Categ
 	return categories, nil
 }
 
+func (c *categoryRepository) GetCategoryByIds(ctx context.Context, ids []string) ([]*model.Category, error) {
+	result := []*model.Category{}
+	for _, id := range ids {
+		for _, category := range categories {
+			if category.ID == id {
+				result = append(result, category)
+			}
+		}
+	}
+	return result, nil
+}
+
 func (c *categoryRepository) GetCategoryById(ctx context.Context, id string) (*model.Category, error) {
 	for _, category := range categories {
 		if category.ID == id {

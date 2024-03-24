@@ -1,6 +1,9 @@
 package graph
 
-import "graphql-example/repository"
+import (
+	"graphql-example/graph/dataloader"
+	"graphql-example/repository"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +11,5 @@ import "graphql-example/repository"
 
 type Resolver struct {
 	Repo repository.Repositories
+	*dataloader.Loaders
 }

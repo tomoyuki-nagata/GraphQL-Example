@@ -2,6 +2,7 @@ package main
 
 import (
 	"graphql-example/graph"
+	"graphql-example/graph/dataloader"
 	"graphql-example/repository"
 	"net/http"
 	"os"
@@ -22,9 +23,11 @@ func main() {
 
 	router := chi.NewRouter()
 
+	repository := repository.New()
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &graph.Resolver{
-			Repo: repository.New(),
+			Repo:    repository,
+			Loaders: dataloader.NewLoaders(repository),
 		},
 	}))
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))

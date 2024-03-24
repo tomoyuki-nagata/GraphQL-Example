@@ -21,6 +21,7 @@ type TaskRepository interface {
 
 type CategoryRepository interface {
 	GetAllCategory(ctx context.Context) ([]*model.Category, error)
+	GetCategoryByIds(ctx context.Context, ids []string) ([]*model.Category, error)
 	GetCategoryById(ctx context.Context, id string) (*model.Category, error)
 	AddCategory(ctx context.Context, name string) (*model.Category, error)
 	UpdateCategory(ctx context.Context, id, name string) (*model.Category, error)
